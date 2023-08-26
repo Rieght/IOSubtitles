@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33530.505
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IOSubtitles", "IOSubtitles\IOSubtitles.csproj", "{B8DB46D2-1B80-4322-9636-92C7551C5517}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B8DB46D2-1B80-4322-9636-92C7551C5517}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8DB46D2-1B80-4322-9636-92C7551C5517}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8DB46D2-1B80-4322-9636-92C7551C5517}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8DB46D2-1B80-4322-9636-92C7551C5517}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {404A657D-85C0-47BB-AD84-488D5BDBB63C}
+	EndGlobalSection
+EndGlobal
