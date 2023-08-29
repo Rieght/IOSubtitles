@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace IOSubtitles
 {
@@ -30,7 +29,7 @@ namespace IOSubtitles
         private static UILabel _subtitlesLabel;
         private static GameObject _subtitleTextbox;
 
-        private static FH_AnimeController _AnimeController;
+        private static FH_AnimeController _AnimeControllerFH;
         private static AudioSource _audiosourceNormal;
         private static AudioSource _audiosourceUX;
         private static AudioSource _audiosourceEjac;
@@ -43,30 +42,36 @@ namespace IOSubtitles
 
         public static void Init()
         {
-            string json = File.ReadAllText("subtitles.json", System.Text.Encoding.UTF8);
+            string json = File.ReadAllText("BepInEx/plugins/subtitles.json", System.Text.Encoding.UTF8);
             _subtitles = JSONDeserializer.Deserialize(json);
         }
 
         [HarmonyPatch(typeof(FH_AnimeController), "Update")]
         [HarmonyPostfix]
-        public static void PlayClip()
-        {   // Init Audiosources
+        public static void PlayClipFH()
+        {
+            // Return if AudioSources are not loaded.
+            if (GameObject.Find("HS_Head").GetComponents<AudioSource>().Length == 0) return;
+
+            // Init Audiosources
             if (_audiosourceNormal == null) _audiosourceNormal = GameObject.Find("HS_Head").GetComponents<AudioSource>()[12];
             if (_audiosourceUX == null) _audiosourceUX = GameObject.Find("HS_Head").GetComponents<AudioSource>()[13];
             if (_audiosourceEjac == null) _audiosourceEjac = GameObject.Find("HS_Head").GetComponents<AudioSource>()[14];
             if (_audiosourceEjac2 == null) _audiosourceEjac2 = GameObject.Find("HS_Head").GetComponents<AudioSource>()[15];
 
-            if (GameClass.UraVoice && _AnimeController.ClipName[12] != null && _subtitles.ContainsKey(_AnimeController.ClipName[12]))
-                PlaySubtitle(_AnimeController.ClipName[12], _audiosourceNormal.time);
-            else if (_AnimeController.ClipName[13] != null && _subtitles.ContainsKey(_AnimeController.ClipName[13]))
-                PlaySubtitle(_AnimeController.ClipName[13], _audiosourceUX.time);
-            else if (_AnimeController.ClipName[14] != null && _subtitles.ContainsKey(_AnimeController.ClipName[14]))
-                PlaySubtitle(_AnimeController.ClipName[14], _audiosourceEjac.time);
-            else if (_AnimeController.ClipName[15] != null && _subtitles.ContainsKey(_AnimeController.ClipName[15]))
-                PlaySubtitle(_AnimeController.ClipName[15], _audiosourceEjac2.time);
+            // Play Subtitles
+            if (GameClass.UraVoice && _AnimeControllerFH.ClipName[12] != null && _subtitles.ContainsKey(_AnimeControllerFH.ClipName[12]))
+                PlaySubtitle(_AnimeControllerFH.ClipName[12], _audiosourceNormal.time);
+            else if (_AnimeControllerFH.ClipName[13] != null && _subtitles.ContainsKey(_AnimeControllerFH.ClipName[13]))
+                PlaySubtitle(_AnimeControllerFH.ClipName[13], _audiosourceUX.time);
+            else if (_AnimeControllerFH.ClipName[14] != null && _subtitles.ContainsKey(_AnimeControllerFH.ClipName[14]))
+                PlaySubtitle(_AnimeControllerFH.ClipName[14], _audiosourceEjac.time);
+            else if (_AnimeControllerFH.ClipName[15] != null && _subtitles.ContainsKey(_AnimeControllerFH.ClipName[15]))
+                PlaySubtitle(_AnimeControllerFH.ClipName[15], _audiosourceEjac2.time);
             else
                 _subtitlesLabel.text = string.Empty;
 
+            // Set Subtitles-Textbox-Position to bottom center
             _subtitleTextbox.transform.position = new Vector3(0, -0.75f, 0);
         }
 
@@ -75,6 +80,7 @@ namespace IOSubtitles
             // Swap subtitles on new audioclip
             if (_subitleId != clipname)
             {
+                _logger.LogDebug(clipname);
                 _subitleId = clipname;
                 _subtitleLineNr = 0;
                 _subtitleTime = float.Parse(_subtitles[_subitleId][_subtitleLineNr][0]);
@@ -103,11 +109,15 @@ namespace IOSubtitles
         {
             if (scene.name == "FH")
             {
+                // Init Subtitle-UI-Object
                 _subtitleTextbox = new GameObject("Subtitles_Text");
                 _subtitlesLabel = _subtitleTextbox.AddComponent<UILabel>();
 
+                // Init AnimeController
+                _AnimeControllerFH = GameObject.Find("MainSystem").GetComponent<FH_AnimeController>();
+
+                // Copy values from "Label_FPS" into Subtitle-UI-Object
                 UILabel fpsLabel = GameObject.Find("Label_FPS").GetComponent<UILabel>();
-                _AnimeController = GameObject.Find("MainSystem").GetComponent<FH_AnimeController>();
                 _subtitlesLabel.ambigiousFont = fpsLabel.ambigiousFont;
                 _subtitlesLabel.applyGradient = fpsLabel.applyGradient;
                 _subtitlesLabel.bitmapFont = fpsLabel.bitmapFont;
