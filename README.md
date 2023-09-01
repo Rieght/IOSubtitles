@@ -7,6 +7,8 @@ Check [Releases](https://github.com/Rieght/IOSubtitles/releases)
 ## How to use
 Extract the files IOSubtitles.dll and subtitles.json into your "GameData\BepInEx\plugins" folder inside the game directory.
 
+The fontsize can be changed in "GameData\BepInEx\config\rieght.insultorder.iosubtitles.cfg" (Game needs to run atleast once) or via the F12-menu (Updates after changing/reloading the scene).
+
 ## How to contribute
 - Fork the repository.
 - Make the changes.
