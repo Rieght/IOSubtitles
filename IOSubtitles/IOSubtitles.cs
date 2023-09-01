@@ -5,13 +5,16 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.IO;
+using BepInEx.Configuration;
 
 namespace IOSubtitles
 {
-    [BepInEx.BepInPlugin(_guid, "IOSubtitles", "1.0.0")]
+    [BepInEx.BepInPlugin(_guid, "IOSubtitles", "1.0.1")]
     public class Hook : BaseUnityPlugin
     {
         private const string _guid = "rieght.insultorder.iosubtitles";
+
+        public static SubtitlesConfig subtitlesConfig = new SubtitlesConfig();
 
         public Hook()
         {
@@ -19,6 +22,18 @@ namespace IOSubtitles
             SubtitlesHook.Init();
             var harmony = new Harmony(_guid);
             harmony.PatchAll(typeof(SubtitlesHook));
+
+            this.AddConfigs();
+        }
+
+        public void AddConfigs()
+        {
+            subtitlesConfig.FontSize = Config.Bind<int>(new ConfigDefinition("Config", "Font Size"), 16);
+        }
+
+        public class SubtitlesConfig
+        {
+            public ConfigEntry<int> FontSize { get; set; }
         }
     }
 
@@ -133,7 +148,7 @@ namespace IOSubtitles
                 _subtitlesLabel.floatSpacingX = fpsLabel.floatSpacingX;
                 _subtitlesLabel.floatSpacingY = fpsLabel.floatSpacingY;
                 _subtitlesLabel.useFloatSpacing = fpsLabel.useFloatSpacing;
-                _subtitlesLabel.fontSize = fpsLabel.fontSize;
+                _subtitlesLabel.fontSize = Hook.subtitlesConfig.FontSize.Value;
                 _subtitlesLabel.fontStyle = fpsLabel.fontStyle;
                 _subtitlesLabel.height = fpsLabel.height;
                 _subtitlesLabel.material = fpsLabel.material;
