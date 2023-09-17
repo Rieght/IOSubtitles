@@ -10,6 +10,7 @@ using BepInEx.Configuration;
 namespace IOSubtitles
 {
     [BepInEx.BepInPlugin(_guid, "IOSubtitles", "1.0.1")]
+    [BepInDependency("gravydevsupreme.xunity.autotranslator", BepInDependency.DependencyFlags.SoftDependency)]
     public class Hook : BaseUnityPlugin
     {
         private const string _guid = "rieght.insultorder.iosubtitles";
@@ -57,8 +58,21 @@ namespace IOSubtitles
 
         public static void Init()
         {
-            string json = File.ReadAllText("BepInEx/plugins/subtitles.json", System.Text.Encoding.UTF8);
-            _subtitles = JSONDeserializer.Deserialize(json);
+			var isJapanese = true;
+			try
+			{
+				string lang = Traverse.CreateWithType("XUnity.AutoTranslator.Plugin.Core.AutoTranslatorSettings").Property<string>("DestinationLanguage", null).Value;
+				isJapanese = string.IsNullOrEmpty(lang) || lang.StartsWith("ja");
+			}
+			catch (Exception)
+			{
+			}
+            
+			var pathRel = (isJapanese ? "BepInEx/plugins/subtitles_ja.json" : "BepInEx/plugins/subtitles_en.json");
+			var path = Path.GetFullPath(Paths.GameRootPath + "/" + pathRel);
+			Debug.Log("Loading subtitles from " + path);
+            
+			SubtitlesHook._subtitles = JSONDeserializer.Deserialize(File.ReadAllText(path, Encoding.UTF8));
         }
 
         [HarmonyPatch(typeof(FH_AnimeController), "Update")]
