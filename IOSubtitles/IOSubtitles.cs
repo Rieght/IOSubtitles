@@ -9,7 +9,7 @@ using BepInEx.Configuration;
 
 namespace IOSubtitles
 {
-    [BepInEx.BepInPlugin(_guid, "IOSubtitles", "1.0.1")]
+    [BepInEx.BepInPlugin(_guid, "IOSubtitles", "1.0.2")]
     [BepInDependency("gravydevsupreme.xunity.autotranslator", BepInDependency.DependencyFlags.SoftDependency)]
     public class Hook : BaseUnityPlugin
     {
@@ -64,7 +64,7 @@ namespace IOSubtitles
 				string lang = Traverse.CreateWithType("XUnity.AutoTranslator.Plugin.Core.AutoTranslatorSettings").Property<string>("DestinationLanguage", null).Value;
 				isJapanese = string.IsNullOrEmpty(lang) || lang.StartsWith("ja");
 			}
-			catch (Exception)
+			catch (System.Exception)
 			{
 			}
             
@@ -72,7 +72,7 @@ namespace IOSubtitles
 			var path = Path.GetFullPath(Paths.GameRootPath + "/" + pathRel);
 			Debug.Log("Loading subtitles from " + path);
             
-			SubtitlesHook._subtitles = JSONDeserializer.Deserialize(File.ReadAllText(path, Encoding.UTF8));
+			SubtitlesHook._subtitles = JSONDeserializer.Deserialize(File.ReadAllText(path, System.Text.Encoding.UTF8));
         }
 
         [HarmonyPatch(typeof(FH_AnimeController), "Update")]
