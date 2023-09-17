@@ -1,5 +1,7 @@
 # IOSubtitles
-Subtitles for the game Insult Order. This plugin adds subtitles during the "gameplay". The subtitles are generated with [Whisper AI](https://github.com/openai/whisper) and slightly edited.
+Subtitles for the game Insult Order. This plugin adds subtitles during the "gameplay". The subtitles are generated with [Whisper AI](https://github.com/openai/whisper) and slightly edited. 
+
+Supported languages: english and japanese (determined by XUnity.AutoTranslator config)
 
 ## Download
 Check [Releases](https://github.com/Rieght/IOSubtitles/releases)
