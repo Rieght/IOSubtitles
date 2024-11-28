@@ -9,11 +9,11 @@ using BepInEx.Configuration;
 
 namespace IOSubtitles
 {
-    [BepInEx.BepInPlugin(_guid, "IOSubtitles", "1.0.2")]
+    [BepInEx.BepInPlugin(_guid, "IOSubtitlesVR", "1.0.0")]
     [BepInDependency("gravydevsupreme.xunity.autotranslator", BepInDependency.DependencyFlags.SoftDependency)]
     public class Hook : BaseUnityPlugin
     {
-        private const string _guid = "rieght.insultorder.iosubtitles";
+        private const string _guid = "rieght.insultorder.iosubtitlesvr";
 
         public static SubtitlesConfig subtitlesConfig = new SubtitlesConfig();
 
@@ -23,18 +23,19 @@ namespace IOSubtitles
             SubtitlesHook.Init();
             var harmony = new Harmony(_guid);
             harmony.PatchAll(typeof(SubtitlesHook));
-
             this.AddConfigs();
         }
 
         public void AddConfigs()
         {
-            subtitlesConfig.FontSize = Config.Bind<int>(new ConfigDefinition("Config", "Font Size"), 16);
+            subtitlesConfig.FontSize = Config.Bind<int>(new ConfigDefinition("Config", "Font Size"), 20);
+            subtitlesConfig.YPos = Config.Bind<int>(new ConfigDefinition("Config", "YPos"), -250);
         }
 
         public class SubtitlesConfig
         {
             public ConfigEntry<int> FontSize { get; set; }
+            public ConfigEntry<int> YPos { get; set; }
         }
     }
 
@@ -58,21 +59,21 @@ namespace IOSubtitles
 
         public static void Init()
         {
-			var isJapanese = true;
-			try
-			{
-				string lang = Traverse.CreateWithType("XUnity.AutoTranslator.Plugin.Core.AutoTranslatorSettings").Property<string>("DestinationLanguage", null).Value;
-				isJapanese = string.IsNullOrEmpty(lang) || lang.StartsWith("ja");
-			}
-			catch (System.Exception)
-			{
-			}
-            
-			var pathRel = (isJapanese ? "BepInEx/plugins/subtitles_ja.json" : "BepInEx/plugins/subtitles_en.json");
-			var path = Path.GetFullPath(Paths.GameRootPath + "/" + pathRel);
-			Debug.Log("Loading subtitles from " + path);
-            
-			SubtitlesHook._subtitles = JSONDeserializer.Deserialize(File.ReadAllText(path, System.Text.Encoding.UTF8));
+            var isJapanese = true;
+            try
+            {
+                string lang = Traverse.CreateWithType("XUnity.AutoTranslator.Plugin.Core.AutoTranslatorSettings").Property<string>("DestinationLanguage", null).Value;
+                isJapanese = string.IsNullOrEmpty(lang) || lang.StartsWith("ja");
+            }
+            catch (System.Exception)
+            {
+            }
+
+            var pathRel = (isJapanese ? "BepInEx/plugins/subtitles_ja.json" : "BepInEx/plugins/subtitles_en.json");
+            var path = Path.GetFullPath(Paths.GameRootPath + "/" + pathRel);
+            Debug.Log("Loading subtitles from " + path);
+
+            SubtitlesHook._subtitles = JSONDeserializer.Deserialize(File.ReadAllText(path, System.Text.Encoding.UTF8));
         }
 
         [HarmonyPatch(typeof(FH_AnimeController), "Update")]
@@ -99,9 +100,6 @@ namespace IOSubtitles
                 PlaySubtitle(_AnimeControllerFH.ClipName[15], _audiosourceEjac2.time);
             else
                 _subtitlesLabel.text = string.Empty;
-
-            // Set Subtitles-Textbox-Position to bottom center
-            _subtitleTextbox.transform.position = new Vector3(0, -0.75f, 0);
         }
 
         private static void PlaySubtitle(string clipname, float audiotime)
@@ -138,37 +136,17 @@ namespace IOSubtitles
         {
             if (scene.name == "FH")
             {
-                // Init Subtitle-UI-Object
-                _subtitleTextbox = new GameObject("Subtitles_Text");
-                _subtitlesLabel = _subtitleTextbox.AddComponent<UILabel>();
-
-                // Init AnimeController
-                _AnimeControllerFH = GameObject.Find("MainSystem").GetComponent<FH_AnimeController>();
-
-                // Copy values from "Label_FPS" into Subtitle-UI-Object
-                UILabel fpsLabel = GameObject.Find("Label_FPS").GetComponent<UILabel>();
-                _subtitlesLabel.ambigiousFont = fpsLabel.ambigiousFont;
-                _subtitlesLabel.applyGradient = fpsLabel.applyGradient;
-                _subtitlesLabel.bitmapFont = fpsLabel.bitmapFont;
-                _subtitlesLabel.alignment = fpsLabel.alignment;
-                _subtitlesLabel.alpha = fpsLabel.alpha;
-                _subtitlesLabel.border = fpsLabel.border;
-                _subtitlesLabel.color = fpsLabel.color;
-                _subtitlesLabel.depth = fpsLabel.depth;
-                _subtitlesLabel.drawRegion = fpsLabel.drawRegion;
-                _subtitlesLabel.effectColor = fpsLabel.effectColor;
-                _subtitlesLabel.effectDistance = fpsLabel.effectDistance;
-                _subtitlesLabel.effectStyle = fpsLabel.effectStyle;
-                _subtitlesLabel.floatSpacingX = fpsLabel.floatSpacingX;
-                _subtitlesLabel.floatSpacingY = fpsLabel.floatSpacingY;
-                _subtitlesLabel.useFloatSpacing = fpsLabel.useFloatSpacing;
+                GameObject go = GameObject.Find("Label_FPS");
+                _subtitleTextbox = GameObject.Instantiate(go,go.transform.parent);
+                _subtitleTextbox.name = "Subtitles";
+                _subtitlesLabel = _subtitleTextbox.GetComponent<UILabel>();
+                GameObject.Destroy(_subtitleTextbox.GetComponent<FPSCounter>());
                 _subtitlesLabel.fontSize = Hook.subtitlesConfig.FontSize.Value;
-                _subtitlesLabel.fontStyle = fpsLabel.fontStyle;
-                _subtitlesLabel.height = fpsLabel.height;
-                _subtitlesLabel.material = fpsLabel.material;
-                _subtitlesLabel.width = fpsLabel.width;
-                _subtitlesLabel.enabled = true;
-                _subtitlesLabel.multiLine = true;
+                _subtitlesLabel.alignment = NGUIText.Alignment.Center;
+                _subtitlesLabel.pivot = UIWidget.Pivot.Center;
+                
+                _subtitleTextbox.transform.localPosition = new Vector3(0f, Hook.subtitlesConfig.YPos.Value, 0f);
+                _AnimeControllerFH = GameObject.Find("MainSystem").GetComponent<FH_AnimeController>();
             }
         }
     }
